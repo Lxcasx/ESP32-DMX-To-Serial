@@ -1,7 +1,7 @@
 /*
   ESP32 DMX to Serial
 
-  This projects reads DMX data from with an MAX485 module
+  This projects reads DMX data with an MAX485 module
   and sends it to the Serial Monitor in order to proccess it with a computer.
   The data is sent in the following format:
   *<data>,<data>,<data>,...,<data>%

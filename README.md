@@ -1,14 +1,16 @@
 # ESP32-DMX-To-Serial
 
-Read data with the ESP32 from DMX and send it with the serial interface to USB
+This project reads DMX data using an ESP32 and a MAX485 module, then sends the data to a computer via the serial interface.
 
-# Circuit diagram
+## Circuit Diagram
 
 ![Circuit diagram](./images/circuit.png)
 
-# Data format
+## Data Format
 
-After a successful DMX connection has been established, the DMX data is continuously sent to the serial control center.
-All DMX channels are output in the following format `*<data>,<data>,<data>,...,<data>%.`
-<br>
-Example: `*0,0,20,255,0,...,50%`
+Once a successful DMX connection is established, the DMX data is continuously sent to the serial control center. All DMX channels are output in the following format:
+
+`*<data>,<data>,<data>,...,<data>%.`
+
+### Example:
+`*0,0,20,255,0,...,50%`
