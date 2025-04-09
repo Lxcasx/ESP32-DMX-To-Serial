@@ -13,4 +13,17 @@ Once a successful DMX connection is established, the DMX data is continuously se
 `*<data>,<data>,<data>,...,<data>%.`
 
 ### Example:
+
 `*0,0,20,255,0,...,50%`
+
+---
+
+# new
+
+# Serial communication
+
+| Name            | Size                     |
+| --------------- | ------------------------ |
+| Start Indicator | 4 Byte                   |
+| Channel 1-512   | 8 Byte each (4.096 Byte) |
+| End Indicator   | 4 Byte                   |
