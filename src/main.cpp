@@ -14,7 +14,7 @@
 
 // define hardware pins
 int transmitPin = -1;
-int receivePin = 3;
+int receivePin = 15;
 int enablePin = -1;
 
 dmx_port_t dmxPort = 1;
