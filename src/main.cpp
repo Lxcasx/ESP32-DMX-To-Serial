@@ -1,5 +1,5 @@
 /*
-  ESP32 DMX to Serial
+  ESP32 DMX to Serial (D2S)
 
   This projects reads DMX data with an MAX485 module
   and sends it to the Serial Monitor in order to proccess it with a computer.
@@ -10,15 +10,11 @@
 */
 
 #include <Arduino.h>
-#include <esp_dmx.h>
-#include "uart.h"
+#include <D2S_DMX.h>
+#include <DS2_UART.h>
 
-// define hardware pins
-int transmitPin = -1;
 int receivePin = 15;
-int enablePin = -1;
 
-dmx_port_t dmxPort = 1;
 byte data[DMX_PACKET_SIZE];
 
 bool dmxIsConnected = false;
@@ -26,17 +22,16 @@ unsigned long lastUpdate = millis();
 
 byte startBytes[10] = {'D', 'M', 'X', '-', 'S', 'E', 'R', 'I', 'A', 'L'};
 
-void printStartBytes();
+void sendStartBytes();
+
+// ToDo: Maybe use booth cores: One for DMX Reading, one for Serial Writing
 
 void setup()
 {
-  uart_init(230400);
+  d2s_uart_init(230400);
   // Serial.begin(230400);
   
-  dmx_config_t config = DMX_CONFIG_DEFAULT;
-  dmx_driver_install(dmxPort, &config, DMX_INTR_FLAGS_DEFAULT);
-
-  dmx_set_pin(dmxPort, transmitPin, receivePin, enablePin);
+  d2s_dmx_install(receivePin);
 }
 
 void loop()
@@ -47,7 +42,7 @@ void loop()
     officially times out. That amount of time is converted into ESP32 clock
     ticks using the constant `DMX_TIMEOUT_TICK`. If it takes longer than that
     amount of time to receive data, this if statement will evaluate to false. */
-  if (dmx_receive(dmxPort, &packet, DMX_TIMEOUT_TICK))
+  if (d2s_dmx_receive(&packet, DMX_TIMEOUT_TICK))
   {
     unsigned long now = millis();
 
@@ -56,20 +51,20 @@ void loop()
     {
       if (!dmxIsConnected)
       {
-        uart_write("DMX is connected!");
+        d2s_uart_write("DMX is connected!");
         dmxIsConnected = true;
       }
 
       // read dmx data into the data buffer
-      dmx_read(dmxPort, data, packet.size);
+      d2s_dmx_read(data, packet.size);
 
       if (now - lastUpdate > 50)
       {
-        printStartBytes();
+        sendStartBytes();
 
         for (int i = 1; i < 512; i++)
         {
-          uart_write((char *)&data[i]);
+          d2s_uart_write((char *)&data[i]);
         }
 
         lastUpdate = now;
@@ -81,13 +76,13 @@ void loop()
         connect or disconnect your DMX devices. If you are consistently getting
         DMX errors, then something may have gone wrong with your code or
         something is seriously wrong with your DMX transmitter. */
-      uart_write("DMX error occurred.");
+      d2s_uart_write("DMX error occurred.");
     }
   }
   else if (dmxIsConnected)
   {
-    uart_write("DMX was disconnected.");
-    dmx_driver_delete(dmxPort);
+    d2s_uart_write("DMX was disconnected.");
+    d2s_dmx_driver_delete();
 
     /* Stop the program. */
     while (true)
@@ -95,7 +90,7 @@ void loop()
   }
 }
 
-void printStartBytes()
+void sendStartBytes()
 {
   Serial.write(startBytes, sizeof(startBytes));
 }
