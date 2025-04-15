@@ -4,17 +4,18 @@
   This projects reads DMX data with an MAX485 module
   and sends it to the Serial Monitor in order to proccess it with a computer.
   The data is sent in the following format:
-  *<data>,<data>,<data>,...,<data>%
+  DMX-SERIAL<data>
 
   Code is based on: https://github.com/someweisguy/esp_dmx
 */
 
 #include <Arduino.h>
 #include <esp_dmx.h>
+#include "uart.h"
 
 // define hardware pins
 int transmitPin = -1;
-int receivePin = 3;
+int receivePin = 15;
 int enablePin = -1;
 
 dmx_port_t dmxPort = 1;
@@ -23,10 +24,15 @@ byte data[DMX_PACKET_SIZE];
 bool dmxIsConnected = false;
 unsigned long lastUpdate = millis();
 
+byte startBytes[10] = {'D', 'M', 'X', '-', 'S', 'E', 'R', 'I', 'A', 'L'};
+
+void printStartBytes();
+
 void setup()
 {
-  Serial.begin(230400);
-
+  uart_init(230400);
+  // Serial.begin(230400);
+  
   dmx_config_t config = DMX_CONFIG_DEFAULT;
   dmx_driver_install(dmxPort, &config, DMX_INTR_FLAGS_DEFAULT);
 
@@ -50,7 +56,7 @@ void loop()
     {
       if (!dmxIsConnected)
       {
-        Serial.println("DMX is connected!");
+        uart_write("DMX is connected!");
         dmxIsConnected = true;
       }
 
@@ -59,20 +65,12 @@ void loop()
 
       if (now - lastUpdate > 50)
       {
-        Serial.print('*');
+        printStartBytes();
+
         for (int i = 1; i < 512; i++)
         {
-          if (i == 511)
-          {
-            Serial.printf("%d", data[i]);
-          }
-          else
-          {
-            Serial.printf("%d,", data[i]);
-          }
+          uart_write((char *)&data[i]);
         }
-
-        Serial.print("%");
 
         lastUpdate = now;
       }
@@ -83,16 +81,21 @@ void loop()
         connect or disconnect your DMX devices. If you are consistently getting
         DMX errors, then something may have gone wrong with your code or
         something is seriously wrong with your DMX transmitter. */
-      Serial.println("A DMX error occurred.");
+      uart_write("DMX error occurred.");
     }
   }
   else if (dmxIsConnected)
   {
-    Serial.println("DMX was disconnected.");
+    uart_write("DMX was disconnected.");
     dmx_driver_delete(dmxPort);
 
     /* Stop the program. */
     while (true)
       yield();
   }
+}
+
+void printStartBytes()
+{
+  Serial.write(startBytes, sizeof(startBytes));
 }
