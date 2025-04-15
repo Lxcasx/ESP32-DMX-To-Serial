@@ -13,7 +13,8 @@
 #include <D2S_DMX.h>
 #include <DS2_UART.h>
 
-int receivePin = 15;
+const int receivePin = 15;
+const int update_interval_ms = 50;
 
 byte data[DMX_PACKET_SIZE];
 
@@ -22,7 +23,7 @@ unsigned long lastUpdate = millis();
 
 byte startBytes[10] = {'D', 'M', 'X', '-', 'S', 'E', 'R', 'I', 'A', 'L'};
 
-void sendStartBytes();
+void send_start_bytes();
 
 // ToDo: Maybe use booth cores: One for DMX Reading, one for Serial Writing
 
@@ -30,7 +31,7 @@ void setup()
 {
   d2s_uart_init(230400);
   // Serial.begin(230400);
-  
+
   d2s_dmx_install(receivePin);
 }
 
@@ -47,7 +48,7 @@ void loop()
     unsigned long now = millis();
 
     // make sure we have a valid packet
-    if (!packet.err)
+    if (packet.err == DMX_OK)
     {
       if (!dmxIsConnected)
       {
@@ -58,9 +59,9 @@ void loop()
       // read dmx data into the data buffer
       d2s_dmx_read(data, packet.size);
 
-      if (now - lastUpdate > 50)
+      if (now - lastUpdate > update_interval_ms)
       {
-        sendStartBytes();
+        send_start_bytes();
 
         for (int i = 1; i < 512; i++)
         {
@@ -90,7 +91,7 @@ void loop()
   }
 }
 
-void sendStartBytes()
+void send_start_bytes()
 {
   Serial.write(startBytes, sizeof(startBytes));
 }

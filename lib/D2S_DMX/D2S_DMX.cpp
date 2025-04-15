@@ -1,6 +1,8 @@
 
 #include "./D2S_DMX.h"
 
+// ToDo: update to someweisguy/esp_dmx version 4.1.0
+
 const int TRANSMIT_PIN = -1;
 const int ENABLE_PIN = -1;
 const dmx_port_t DMX_PORT = 1;
